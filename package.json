@@ -1,0 +1,31 @@
+{
+  "name": "piecemeta-lmdb",
+  "version": "0.1.0",
+  "description": "Storage abstraction for the PieceMeta API server using LMDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PieceMeta/piecemeta-lmdb.git"
+  },
+  "keywords": [
+    "piecemeta",
+    "storage"
+  ],
+  "author": "Anton Koch <antonymousfeedback@gmail.com> (http://htmhell.de)",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/PieceMeta/piecemeta-lmdb/issues"
+  },
+  "homepage": "https://github.com/PieceMeta/piecemeta-lmdb#readme",
+  "dependencies": {
+    "assert-plus": "^0.1.5",
+    "bluebird": "^3.0.5",
+    "fs-extra": "^0.26.2",
+    "msgpack": "^1.0.2",
+    "node-constants": "0.0.2",
+    "node-schema-object": "^2.0.1"
+  }
+}
