@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PieceMeta/piecemeta-lmdb.git"
+    "url": "git+https://github.com/PieceMeta/node-piecemeta-lmdb.git"
   },
   "keywords": [
     "piecemeta",
@@ -17,9 +17,9 @@
   "author": "Anton Koch <antonymousfeedback@gmail.com> (http://htmhell.de)",
   "license": "GPL-2.0",
   "bugs": {
-    "url": "https://github.com/PieceMeta/piecemeta-lmdb/issues"
+    "url": "https://github.com/PieceMeta/node-piecemeta-lmdb/issues"
   },
-  "homepage": "https://github.com/PieceMeta/piecemeta-lmdb#readme",
+  "homepage": "https://github.com/PieceMeta/node-piecemeta-lmdb#readme",
   "dependencies": {
     "assert-plus": "^0.1.5",
     "bluebird": "^3.0.5",
