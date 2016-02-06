@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Storage abstraction for the PieceMeta API server using LMDB",
   "main": "dist/pma-lmdb.js",
+  "engines": {
+    "node": ">=0.11"
+  },
   "scripts": {
     "test": "./node_modules/.bin/mocha --compilers js:babel-core/register test/",
     "build": "./node_modules/.bin/babel ./src/ --out-dir ./dist/ --extensions .es6"
