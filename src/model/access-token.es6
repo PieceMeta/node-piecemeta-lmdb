@@ -1,10 +1,8 @@
-'use strict';
+import BaseModel from './base-model';
 
-var LmdbModel = require('../lib/model');
-
-class AccessToken extends LmdbModel {
-    constructor() {
-        this.schema = {
+export default class AccessTokenModel extends BaseModel {
+    constructor(payload) {
+        super(payload, {
 
             uuid: {type: String, primary: true},
             token: {type: String, index: true},
@@ -13,14 +11,13 @@ class AccessToken extends LmdbModel {
             issued: Date,
             hours_valid: {type: Number, default: 1440}
 
-        };
-        super();
+        });
     }
 
     isValid() {
         var expiration = new Date();
-        expiration.setHours(expiration.getHours() + this.doc.hours_valid);
-        return this.doc.issued < expiration;
+        expiration.setHours(expiration.getHours() + this.hours_valid);
+        return this.issued < expiration;
     }
 
     generateAccessToken() {
@@ -28,5 +25,3 @@ class AccessToken extends LmdbModel {
         return secureRandom.randomBuffer(128).toString('hex');
     }
 }
-
-module.exports = AccessToken;

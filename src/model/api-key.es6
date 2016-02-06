@@ -1,10 +1,8 @@
-'use strict';
+import BaseModel from './base-model';
 
-var LmdbModel = require('../lib/model');
-
-class ApiKey extends LmdbModel {
-    constructor() {
-        this.schema = {
+export default class ApiKeyModel extends BaseModel {
+    constructor(payload) {
+        super(payload, {
 
             uuid: {type: 'string', primary: true},
             key: {type: 'string', index: true},
@@ -17,20 +15,17 @@ class ApiKey extends LmdbModel {
             created: 'date',
             updated: 'date'
 
-        };
-        super();
+        });
     }
 
     isScopeAllowed(scope) {
-        return this.doc.scopes.indexOf(scope) > -1;
+        return this.scopes.indexOf(scope) > -1;
     }
 
     generateApiCredentials() {
         var secureRandom = require('secure-random'),
             sha1 = require('sha1');
-        this.doc.key = sha1(secureRandom.randomBuffer(8).toString('hex') + this.doc.email + secureRandom.randomBuffer(8).toString('hex'));
-        this.doc.secret = secureRandom.randomBuffer(128).toString('hex');
+        this.key = sha1(secureRandom.randomBuffer(8).toString('hex') + this.email + secureRandom.randomBuffer(8).toString('hex'));
+        this.secret = secureRandom.randomBuffer(128).toString('hex');
     }
 }
-
-module.exports = ApiKey;

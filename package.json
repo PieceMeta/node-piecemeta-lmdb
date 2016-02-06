@@ -2,9 +2,10 @@
   "name": "piecemeta-lmdb",
   "version": "0.1.0",
   "description": "Storage abstraction for the PieceMeta API server using LMDB",
-  "main": "index.js",
+  "main": "dist/pma-lmdb.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha --compilers js:babel-core/register test/",
+    "build": "./node_modules/.bin/babel ./src/ --out-dir ./dist/ --extensions .es6"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,18 @@
     "bluebird": "^3.0.5",
     "fs-extra": "^0.26.2",
     "msgpack": "^1.0.2",
-    "node-constants": "0.0.2",
-    "node-schema-object": "^2.0.1"
+    "node-lmdb": "git+https://github.com/Venemo/node-lmdb.git",
+    "node-schema-object": "^2.0.1",
+    "secure-random": "^1.1.1",
+    "sha1": "^1.1.1",
+    "uuid4": "^1.0.0",
+    "uuidv5": "0.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.4.5",
+    "babel-core": "^6.4.5",
+    "babel-preset-es2015": "^6.3.13",
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
   }
 }

@@ -1,10 +1,8 @@
-'use strict';
+import BaseModel from './base-model';
 
-var LmdbModel = require('../lib/model');
-
-class Stream extends LmdbModel {
-    constructor() {
-        this.schema = {
+export default class StreamModel extends BaseModel {
+    constructor(payload) {
+        super(payload, {
 
             uuid: {type: 'string', index: true, unique: true},
             channel_uuid: {type: 'string', index: true, required: true},
@@ -21,9 +19,6 @@ class Stream extends LmdbModel {
             created: 'date',
             updated: 'date'
 
-        };
-        super();
+        });
     }
 }
-
-module.exports = Stream;

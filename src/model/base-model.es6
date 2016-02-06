@@ -1,28 +1,31 @@
-'use strict';
+import Search from '../controller/search';
+import Sys from '../controller/sys';
 
 var Model = require('node-schema-object'),
     Promise = require('bluebird'),
-    search = require('./search'),
-    lmdbSys = require('./sys');
+    msgpack = require('msgpack');
 
-class LmdbModel extends Model {
-    constructor() {
-        this.doc = super(this.schema);
+export default class BaseModel {
+    constructor(payload, schema) {
+        this._schema = schema;
+        this._model = new Model(schema);
+        this._doc = new this._model(payload);
+    }
+
+    get doc() {
+        return this._doc;
     }
 
     save() {
         return Promise.coroutine(function* () {
-            yield this.onSave();
+            if (typeof this.onSave === 'function') yield this.onSave();
 
-            // TODO: properly validate uuid
-            if (typeof this.uuid !== 'string') {
-                this.doc.uuid = require('./uuid').v4();
-            }
+            if (typeof this.uuid !== 'string') this.uuid = require('uuid4')();
 
             var dbi = yield lmdbSys.openDb(this.constructor.name),
                 txn = lmdbSys.getEnv().beginTxn();
 
-            txn.putBinary(dbi, this.doc.uuid, this.toMsgpack());
+            txn.putBinary(dbi, this.uuid, this.toMsgpack());
             txn.commit();
 
             yield lmdbSys.closeDb(dbi);
@@ -36,12 +39,12 @@ class LmdbModel extends Model {
 
     remove() {
         return Promise.coroutine(function* () {
-            yield this.onRemove();
+            if (typeof this.onRemove === 'function') yield this.onRemove();
 
             var dbi = yield lmdbSys.openDb(this.constructor.name),
                 txn = lmdbSys.getEnv().beginTxn();
 
-            txn.del(dbi, this.doc.uuid);
+            txn.del(dbi, this.uuid);
             txn.commit();
 
             yield lmdbSys.closeDb(dbi);
@@ -50,16 +53,11 @@ class LmdbModel extends Model {
         })();
     }
 
-    onRemove() {
-        return Promise.resolve();
-    }
-
-    onSave() {
-        return Promise.resolve();
-    }
-
     toObject() {
-        return this.doc.toObject();
+        var obj = this.toObject();
+        delete obj._model;
+        delete obj._schema;
+        return obj;
     }
 
     toJSON() {
@@ -67,8 +65,6 @@ class LmdbModel extends Model {
     }
 
     toMsgpack() {
-        return require('msgpack').pack(this.toObject());
+        return msgpack.pack(this.toObject());
     }
 }
-
-module.exports = LmdbModel;

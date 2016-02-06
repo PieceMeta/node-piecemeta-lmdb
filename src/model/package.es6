@@ -1,10 +1,8 @@
-'use strict';
+import BaseModel from './base-model';
 
-var LmdbModel = require('../lib/model');
-
-class Package extends LmdbModel {
-    constructor() {
-        this.schema = {
+export default class PackageModel extends BaseModel {
+    constructor(payload) {
+        super(payload, {
 
             uuid: {type: String, minLength: 1, index: true},
             user_uuid: {type: String, minLength: 1, index: true},
@@ -14,9 +12,6 @@ class Package extends LmdbModel {
             created: Date,
             updated: Date
 
-        };
-        super();
+        });
     }
 }
-
-module.exports = Package;
