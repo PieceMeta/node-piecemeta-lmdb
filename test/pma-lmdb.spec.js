@@ -6,7 +6,7 @@ chai.should();
 
 import PmaLmdb from '../src/pma-lmdb';
 
-describe('PmaLmdb', () => {
+describe('PmaLmdb', function() {
     this.timeout(10000);
     let client;
 
