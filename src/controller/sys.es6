@@ -7,12 +7,17 @@ var lmdb = require('node-lmdb'),
 
 if (_debug) Promise.longStackTraces();
 
-export const PM_LMDB_PAD_FRAMENUM = 12;
-export const PM_LMDB_SEP_FRAMES = '/f/';
-
 export default class Sys {
     constructor() {
         this._env = new lmdb.Env();
+    }
+
+    get PM_LMDB_PAD_FRAMENUM() {
+        return 12;
+    }
+
+    get PM_LMDB_SEP_FRAMES() {
+        return '/f/';
     }
 
     get env() {

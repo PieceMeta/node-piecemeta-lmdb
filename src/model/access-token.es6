@@ -13,13 +13,13 @@ export default class AccessTokenModel extends BaseModel {
 
         });
         if (typeof this.doc.token === 'undefined') this.doc.token = this.generateAccessToken();
-        if (typeof this.doc.issued === 'undefined') this.issued = Date.now();
+        if (typeof this.doc.issued === 'undefined') this.doc.issued = Date.now();
     }
 
     isValid() {
-        var expiration = new Date();
-        expiration.setHours(expiration.getHours() + this.hours_valid);
-        return this.issued < expiration;
+        var expiration = this.doc.issued;
+        expiration.setHours(expiration.getHours() + this.doc.hours_valid);
+        return expiration.getTime() > Date.now();
     }
 
     generateAccessToken() {

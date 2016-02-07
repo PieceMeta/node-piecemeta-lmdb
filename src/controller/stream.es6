@@ -1,10 +1,9 @@
 import Sys from './sys';
-import PM_LMDB_SEP_FRAMES from './sys';
-import PM_LMDB_PAD_FRAMENUM from './sys';
 
 var lmdb = require('node-lmdb'),
     Promise = require('bluebird'),
     assert = require('assert-plus'),
+    uuid4 = require('uuid4'),
     _debug = typeof v8debug === 'object';
 
 if (_debug) Promise.longStackTraces();
@@ -14,9 +13,8 @@ export default class Stream {
         this._sys = sys;
     }
 
-    getStreamData(dbi, uuid, config) {
-        assert.object(dbi, 'Dbi');
-        assert.true(require('uuid4')(uuid), 'UUID');
+    getStreamData(meta, config) {
+        assert.equal(require('uuid4').valid(meta.uuid), true, 'meta must contain valid uuid');
 
         if (Object.getPrototypeOf(config) !== Object.prototype) {
             config = {};
@@ -72,27 +70,41 @@ export default class Stream {
             .catch(Sys.errorHandler);
     }
 
-    putStreamData(dbi, uuid, frameBuffer, config) {
-        assert.object(dbi, 'Dbi');
-        assert.true(require('uuid4')(uuid), 'UUID');
-        assert.object(config, 'config');
+    putStreamData(meta, frameBuffer, config) {
+        assert.equal(uuid4.valid(meta.uuid), true, 'meta must contain valid uuid');
+        assert.equal(uuid4.valid(meta.package_uuid), true, 'meta must contain valid package uuid');
+        assert.buffer(frameBuffer, 'frameBuffer must be of buffer type');
+        assert.object(config, 'config must be an object');
 
-        var from = config.from,
-            frameSize = config.valueLength * config.valueCount,
-            frameCount = frameBuffer.length / frameSize;
+        let valueLength, frameSize, frameCount, _self = this;
 
-        return Promise.resolve()
-            .then(() => {
-                var txn = this._env.beginTxn();
+        switch (config.format) {
+            case 'double':
+                valueLength = 8;
+                break;
+            case 'float':
+                valueLength = 4;
+                break;
+            default:
+                throw new Error('Unknown format: ' + config.format);
+        }
 
-                for (var i = 0; i < from + frameCount; i += 1) {
-                    var key = Stream.getKey(uuid, PM_LMDB_SEP_FRAMES, i);
-                    txn.putBinary(dbi, key, frameBuffer.slice(i * frameSize, (i + 1) * frameSize));
-                }
+        frameSize = valueLength * meta.labels.length;
+        frameCount = frameBuffer.length / frameSize;
 
-                txn.commit();
-            })
-            .catch(Sys.errorHandler);
+        return Promise.coroutine(function* () {
+            let dbi = yield _self._sys.openDb(meta.package_uuid),
+                txn = _self._sys.env.beginTxn();
+
+            for (let i = 0; i < frameCount; i += 1) {
+                let key = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, i);
+                txn.putBinary(dbi, key, frameBuffer.slice(i * frameSize, (i + 1) * frameSize));
+            }
+
+            txn.commit();
+            _self._sys.closeDb(dbi);
+        })()
+        .catch(Sys.errorHandler);
     }
 
     delStreamData(dbi, uuid) {
@@ -142,7 +154,7 @@ export default class Stream {
         key += separator || '';
 
         if (typeof frameNum === 'number') {
-            key += Stream.padNumber(frameNum, PM_LMDB_PAD_FRAMENUM);
+            key += this.padNumber(frameNum, this._sys.PM_LMDB_PAD_FRAMENUM);
         }
 
         return key;

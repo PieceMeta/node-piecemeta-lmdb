@@ -27,10 +27,6 @@ export default class Meta {
         let _self = this;
 
         return Promise.coroutine(function* () {
-            if (Object.keys(query).length === 0) {
-                query = {'*': ['*']};
-            }
-
             let data = [],
                 dbi = yield _self._sys.openDb(resource),
                 txn = _self._sys.env.beginTxn({readOnly: true}),

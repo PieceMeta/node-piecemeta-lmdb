@@ -1,0 +1,12 @@
+{
+  "channel_uuid": "3a3daf6c-c801-4dc8-b9c2-5142f045b58e",
+  "package_uuid": "3a3daf6c-c801-4dc8-b9c2-5142f045b58e",
+  "user_uuid": "3a3daf6c-c801-4dc8-b9c2-5142f045b58e",
+  "title": "Lorem ipsum",
+  "description": "Lorem ipsum dolor sit amet.",
+  "group": "asdf",
+  "frameCount": 0,
+  "labels": ["x", "y", "z"],
+  "format": "float",
+  "fps": 25
+}
