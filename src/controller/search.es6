@@ -18,7 +18,7 @@ export default class Search {
 
     index(resource) {
         var si;
-        if (indexes.hasOwnProperty(resource)) {
+        if (this._indexes.hasOwnProperty(resource)) {
             si = this._indexes[resource];
         } else {
             si = require('search-index')({indexPath: require('path').join(this._basepath, resource)});
@@ -33,15 +33,17 @@ export default class Search {
                     });
             },
             add: (document, schema) => {
-                var properties = Object.keys(schema),
-                    indexFields = [];
+                var indexFields = [];
+                    //properties = Object.keys(schema);
+                /*
                 for (let prop of properties) {
                     if (schema[prop].hasOwnProperty('index')) {
                         indexFields.push(prop);
                     }
                 }
-                return Promise.promisify(si.add)(document, {
-                    fieldOptions: {fieldName: indexFields},
+                */
+                return Promise.promisify(si.add)([document], {
+                    //fieldOptions: {fieldName: indexFields},
                     separator: /[ (\n)]+/
                 });
             },

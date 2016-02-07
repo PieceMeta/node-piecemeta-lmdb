@@ -10,12 +10,8 @@ var lmdb = require('node-lmdb'),
 if (_debug) Promise.longStackTraces();
 
 export default class Stream {
-    constructor(env) {
-        this.setEnv(env);
-    }
-
-    setEnv(env) {
-        this._env = env;
+    constructor(sys) {
+        this._sys = sys;
     }
 
     getStreamData(dbi, uuid, config) {

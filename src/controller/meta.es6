@@ -5,20 +5,16 @@ var lmdb = require('node-lmdb'),
     Promise = require('bluebird'),
     msgpack = require('msgpack'),
     assert = require('assert-plus'),
+    uuid4 = require('uuid4'),
     _debug = typeof v8debug === 'object';
 
 if (_debug) Promise.longStackTraces();
 
 export default class Meta {
-    constructor(env, searchBasepath) {
-        this.setEnv(env);
+    constructor(sys, searchBasepath) {
         this._models = {};
-        this._env = null;
+        this._sys = sys;
         this._search = new Search(searchBasepath);
-    }
-
-    setEnv(env) {
-        this._env = env;
     }
 
     registerModel(key, model) {
@@ -29,136 +25,156 @@ export default class Meta {
         return this._models[key];
     }
 
-    query(dbi, resource, query = {}) {
-        assert.object(dbi, 'Dbi');
+    query(resource, query = {}) {
         assert.string(resource, 'resource');
 
-        return Promise.coroutine(function* () {
+        let _self = this;
 
+        return Promise.coroutine(function* () {
             if (Object.keys(query).length === 0) {
                 query = {'*': ['*']};
             }
 
-            let data = [], txn = this._env.beginTxn({readOnly: true}),
+            let data = [],
+                dbi = yield _self._sys.openDb(resource),
+                txn = _self._sys.env.beginTxn({readOnly: true}),
                 cursor = new lmdb.Cursor(txn, dbi),
-                results = yield this._search.index(resource).query(query);
+                results = yield _self._search.index(resource).query(query);
 
             yield Promise.map(results, (hit) => {
                 cursor.goToKey(hit.document.uuid);
                 cursor.getCurrentBinary((key, buffer) => {
-                    data.push(msgpack.unpack(buffer));
+                    data.push(new _self._models[resource](msgpack.unpack(buffer)));
                 });
             }, {concurrency: 1});
 
             cursor.close();
             txn.commit();
+            _self._sys.closeDb(dbi);
             return data;
-        })();
+        })()
+        .catch(Sys.errorHandler);
     }
 
-    get(dbi, resource, uuid) {
-        assert.object(dbi, 'Dbi');
-        assert.true(require('uuid4')(uuid), 'UUID');
+    fetch(resource, uuid) {
+        assert.string(resource, 'resource key must be string');
+        assert.equal(require('uuid4').valid(uuid), true, 'UUID');
 
-        return Promise.resolve()
-            .then(function () {
-                var model = lmdbModel(this._schemas[resource], {});
-                return model.fetch(uuid);
-            })
-            .catch(Sys.errorHandler);
+        let _self = this;
+
+        return Promise.coroutine(function* () {
+            let dbi = yield _self._sys.openDb(resource),
+                txn = _self._sys.env.beginTxn({readOnly: true}),
+                cursor = new lmdb.Cursor(txn, dbi);
+
+            cursor.goToKey(uuid);
+            return _self.getBinaryAsync(cursor, _self._models[resource])
+                .then((data) => {
+                    cursor.close();
+                    txn.commit();
+                    _self._sys.closeDb(dbi);
+                    return data;
+                });
+        })()
+        .catch(Sys.errorHandler);
     }
 
-    create(dbi, schemaKey, payload, override) {
-        assert.object(dbi, 'Dbi');
-        assert.string(schemaKey, 'schemaKey');
-        assert.object(payload, 'payload');
+    create(resource, payload, override) {
+        assert.string(resource, 'resource key must be string');
+        assert.object(payload, 'payload must be an object');
 
-        return Promise.resolve()
-            .then(function () {
+        let _self = this;
 
-                if (!this._schemas.hasOwnProperty(schemaKey)) {
-                    throw new Error('LMDB Meta schema not registered for key: ' + schemaKey);
-                }
+        return Promise.coroutine(function* () {
+            if (!_self._models.hasOwnProperty(resource)) {
+                throw new Error(`LMDB model not registered for key: ${resource}`);
+            }
 
-                // TODO: re-enable this for new model structure
-                /*
-                 if (!override || !payload.uuid) {
-                 payload.uuid = require('uuid4')();
-                 }
-                 */
+            if (!override || !payload.uuid) payload.uuid = require('uuid4')();
 
-                return new this._models[schemaKey](payload);
-            })
-            .catch(Sys.errorHandler);
+            let dbi = yield _self._sys.openDb(resource),
+                data = new _self._models[resource](payload),
+                txn = _self._sys.env.beginTxn({readOnly: false});
+
+            txn.putBinary(dbi, data.doc.uuid, data.toMsgpack());
+            txn.commit();
+            _self._sys.closeDb(dbi);
+
+            return _self._search.index(resource).add(data.toObject())
+                .then(function () {
+                    return data;
+                });
+        })()
+        .catch(Sys.errorHandler);
     }
 
-    update(dbi, schemaKey, uuid, payload) {
-        assert.object(dbi, 'Dbi');
-        assert.string(schemaKey, 'schemaKey');
-        assert.true(require('uuid4')(uuid), 'UUID');
-        assert.object(payload, 'payload');
+    update(resource, uuid, payload) {
+        assert.string(resource, 'resource key must be string');
+        assert.equal(require('uuid4').valid(uuid), true, 'invalid UUID');
+        assert.object(payload, 'payload must be an object');
 
-        return Promise.resolve()
-            .then(function () {
+        let _self = this;
 
-                if (!this._schemas.hasOwnProperty(schemaKey)) {
-                    throw new Error('LMDB Meta schema not registered for key: ' + schemaKey);
-                }
+        return Promise.coroutine(function* () {
+            if (!_self._models.hasOwnProperty(resource)) {
+                throw new Error(`LMDB model not registered for key: ${resource}`);
+            }
 
-                var model = lmdbModel({}, schemaKey, {});
+            let dbi = yield _self._sys.openDb(resource),
+                primaryKey = 'uuid',
+                properties = Object.keys(payload),
+                txn = _self._sys.env.beginTxn(),
+                cursor = new lmdb.Cursor(txn, dbi),
+                result = null;
 
-                var schema = this._schemas[schemaKey],
-                    primaryKey = 'uuid',
-                    properties = Object.keys(payload),
-                    txn = this._env.beginTxn(),
-                    cursor = new lmdb.Cursor(txn, dbi),
-                    result;
-
-                cursor.goToKey(uuid);
-                cursor.getCurrentBinary(unpackResult);
-
-                function unpackResult(key, buffer) {
-                    result = msgpack.unpack(buffer);
-                }
-
-                cursor.close();
-
-                for (let prop of properties) {
-                    if (schema[prop] && !(payload[prop] instanceof Function)) {
-                        if (schema[prop].hasOwnProperty('protected')) {
-                            delete payload[prop];
+            cursor.goToKey(uuid);
+            return _self.getBinaryAsync(cursor, _self._models[resource])
+                .then((result) => {
+                    cursor.close();
+                    for (let prop of properties) {
+                        if (prop !== primaryKey && result.doc.hasOwnProperty(prop)) {
+                            result.doc[prop] = payload[prop];
                         }
-                        if (schema[prop].hasOwnProperty('primary')) {
-                            primaryKey = prop;
-                        }
-                        result[prop] = payload[prop];
                     }
-                }
-
-                if (!payload.hasOwnProperty(primaryKey)) {
-                    throw new Error('LMDB Meta expected primary key not found: ' + primaryKey);
-                }
-
-                var buffer = msgpack.pack(payload);
-
-                txn.putBinary(dbi, primaryKey, buffer);
-                txn.commit();
-
-                return this._search.index(schemaKey).add(result, schema);
-            })
-            .catch(Sys.errorHandler);
+                    txn.putBinary(dbi, uuid, result.toMsgpack());
+                    txn.commit();
+                    _self._sys.closeDb(dbi);
+                    return result;
+                })
+                .then((result) => {
+                    return _self._search.index(resource).add(result.toObject())
+                        .then(function () {
+                            return result;
+                        });
+                });
+        })()
+        .catch(Sys.errorHandler);
     }
 
-    del(dbi, uuid) {
-        assert.object(dbi, 'Dbi');
-        assert.true(require('uuid4')(uuid), 'UUID');
+    del(resource, uuid) {
+        assert.string(resource, 'resource key must be string');
+        assert.equal(require('uuid4').valid(uuid), true, 'invalid UUID');
 
-        return Promise.resolve()
-            .then(function () {
-                var txn = this._env.beginTxn();
-                txn.del(dbi, uuid);
-                txn.commit();
-            })
-            .catch(Sys.errorHandler);
+        let _self = this;
+
+        return Promise.coroutine(function* () {
+            let dbi = yield _self._sys.openDb(resource);
+            var txn = _self._sys.env.beginTxn();
+            txn.del(dbi, uuid);
+            txn.commit();
+            _self._sys.closeDb(dbi);
+        })()
+        .catch(Sys.errorHandler);
+    }
+
+    getBinaryAsync(cursor, resource) {
+        return Promise.promisify((cursor, resource, cb) => {
+                cursor.getCurrentBinary((key, buffer) => {
+                    cb(null, new resource(msgpack.unpack(buffer)));
+                });
+            })(cursor, resource)
+            .catch((err) => {
+                return null;
+            });
     }
 }

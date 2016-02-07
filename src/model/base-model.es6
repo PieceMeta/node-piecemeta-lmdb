@@ -54,7 +54,7 @@ export default class BaseModel {
     }
 
     toObject() {
-        var obj = this.toObject();
+        var obj = this.doc.toObject();
         delete obj._model;
         delete obj._schema;
         return obj;

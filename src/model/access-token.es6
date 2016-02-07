@@ -12,6 +12,7 @@ export default class AccessTokenModel extends BaseModel {
             hours_valid: {type: Number, default: 1440}
 
         });
+        if (typeof this.doc.token === 'undefined') this.doc.token = this.generateAccessToken();
     }
 
     isValid() {

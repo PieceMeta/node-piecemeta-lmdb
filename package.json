@@ -31,14 +31,16 @@
     "msgpack": "^1.0.2",
     "node-lmdb": "git+https://github.com/Venemo/node-lmdb.git",
     "node-schema-object": "^3.2.7",
+    "search-index": "^0.6.16",
     "secure-random": "^1.1.1",
     "sha1": "^1.1.1",
-    "uuid4": "^1.0.0",
+    "uuid4": "git+https://github.com/tracker1/node-uuid4.git",
     "uuidv5": "0.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.4.5",
     "babel-core": "^6.4.5",
+    "babel-plugin-transform-runtime": "^6.4.3",
     "babel-preset-es2015": "^6.3.13",
     "chai": "^3.5.0",
     "mocha": "^2.4.5"

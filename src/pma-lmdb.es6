@@ -20,8 +20,8 @@ export default class PmaLmdb {
     open(lmdbDataPath, indexDataPath, mapSize, dbCount) {
         return this._sys.openEnv(lmdbDataPath, mapSize, dbCount)
             .then(() => {
-                this._stream = new Stream(this._sys.env);
-                this._meta = new Meta(this._sys.env, indexDataPath);
+                this._stream = new Stream(this._sys);
+                this._meta = new Meta(this._sys, indexDataPath);
                 for (let model of [
                     AccessTokenModel,
                     ApiKeyModel,
