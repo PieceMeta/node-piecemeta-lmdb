@@ -16,6 +16,7 @@ export default class ApiKeyModel extends BaseModel {
             updated: 'date'
 
         });
+        if (typeof this.doc.key === 'undefined' || typeof this.doc.secret === 'undefined') this.generateApiCredentials();
     }
 
     isScopeAllowed(scope) {

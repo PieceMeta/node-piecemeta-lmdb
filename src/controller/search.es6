@@ -1,5 +1,7 @@
 var Promise = require('bluebird'),
     fs = require('fs-extra'),
+    path = require('path'),
+    Datastore = require('nedb'),
     mkdirp = Promise.promisify(fs.mkdirp),
     _debug = typeof v8debug === 'object';
 
@@ -17,20 +19,22 @@ export default class Search {
     }
 
     index(resource) {
-        var si;
+        var index;
         if (this._indexes.hasOwnProperty(resource)) {
-            si = this._indexes[resource];
+            index = this._indexes[resource];
         } else {
-            si = require('search-index')({indexPath: require('path').join(this._basepath, resource)});
-            this._indexes[resource] = si;
+            index = new Datastore({filename: path.join(this._basepath, resource)});
+            this._indexes[resource] = index;
+            this._indexes[resource].loadDatabase();
         }
         return {
-            si: si,
+            index: index,
             query: (query) => {
-                return Promise.promisify(si.search)({query: query})
-                    .then((results) => {
-                        return results.hits;
+                return Promise.promisify(function (query, cb) {
+                    index.find(query, function (err, results) {
+                        cb(err, results);
                     });
+                })(query);
             },
             add: (document, schema) => {
                 var indexFields = [];
@@ -42,23 +46,17 @@ export default class Search {
                     }
                 }
                 */
-                return Promise.promisify(si.add)([document], {
-                    //fieldOptions: {fieldName: indexFields},
-                    separator: /[ (\n)]+/
-                });
+                return Promise.promisify(function (query, doc, options, cb) {
+                    index.update(query, doc, options, function (err) {
+                        cb(err);
+                    });
+                })({uuid: document.uuid}, document, {upsert: true});
             },
             remove: (documentId) => {
-                return Promise.promisify(si.del)(documentId);
+                return Promise.promisify(index.remove)({uuid: documentId});
             },
             clear: () => {
-                return Promise.promisify(si.empty)();
-            },
-            stat: () => {
-                return Promise.promisify((cb) => {
-                    si.tellMeAboutMySearchIndex((stat) => {
-                        cb(null, stat);
-                    });
-                })();
+                return Promise.promisify(index.remove)({});
             }
         };
     }

@@ -10,47 +10,15 @@ export default class BaseModel {
         this._schema = schema;
         this._model = new Model(schema);
         this._doc = new this._model(payload);
+        if (this._doc.hasOwnProperty('created') && typeof this._doc.created === 'undefined') this._doc.created = Date.now();
     }
 
     get doc() {
         return this._doc;
     }
 
-    save() {
-        return Promise.coroutine(function* () {
-            if (typeof this.onSave === 'function') yield this.onSave();
-
-            if (typeof this.uuid !== 'string') this.uuid = require('uuid4')();
-
-            var dbi = yield lmdbSys.openDb(this.constructor.name),
-                txn = lmdbSys.getEnv().beginTxn();
-
-            txn.putBinary(dbi, this.uuid, this.toMsgpack());
-            txn.commit();
-
-            yield lmdbSys.closeDb(dbi);
-
-            yield search.index(this.constructor.name)
-                .add(this.toObject(), this.constructor.name);
-
-            return true;
-        })();
-    }
-
-    remove() {
-        return Promise.coroutine(function* () {
-            if (typeof this.onRemove === 'function') yield this.onRemove();
-
-            var dbi = yield lmdbSys.openDb(this.constructor.name),
-                txn = lmdbSys.getEnv().beginTxn();
-
-            txn.del(dbi, this.uuid);
-            txn.commit();
-
-            yield lmdbSys.closeDb(dbi);
-
-            return true;
-        })();
+    update() {
+        if (this._doc.hasOwnProperty('updated')) this._doc.updated = Date.now();
     }
 
     toObject() {

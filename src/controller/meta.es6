@@ -21,10 +21,6 @@ export default class Meta {
         this._models[key] = model;
     }
 
-    getModel(key) {
-        return this._models[key];
-    }
-
     query(resource, query = {}) {
         assert.string(resource, 'resource');
 
@@ -41,8 +37,8 @@ export default class Meta {
                 cursor = new lmdb.Cursor(txn, dbi),
                 results = yield _self._search.index(resource).query(query);
 
-            yield Promise.map(results, (hit) => {
-                cursor.goToKey(hit.document.uuid);
+            yield Promise.map(results, (item) => {
+                cursor.goToKey(item.uuid);
                 cursor.getCurrentBinary((key, buffer) => {
                     data.push(new _self._models[resource](msgpack.unpack(buffer)));
                 });
@@ -136,6 +132,7 @@ export default class Meta {
                             result.doc[prop] = payload[prop];
                         }
                     }
+                    result.update();
                     txn.putBinary(dbi, uuid, result.toMsgpack());
                     txn.commit();
                     _self._sys.closeDb(dbi);

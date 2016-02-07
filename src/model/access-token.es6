@@ -13,6 +13,7 @@ export default class AccessTokenModel extends BaseModel {
 
         });
         if (typeof this.doc.token === 'undefined') this.doc.token = this.generateAccessToken();
+        if (typeof this.doc.issued === 'undefined') this.issued = Date.now();
     }
 
     isValid() {
