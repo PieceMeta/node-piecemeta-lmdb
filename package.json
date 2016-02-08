@@ -2,7 +2,7 @@
   "name": "piecemeta-lmdb",
   "version": "0.1.0",
   "description": "Storage abstraction for the PieceMeta API server using LMDB",
-  "main": "dist/pma-lmdb.js",
+  "main": "dist/piecemeta-lmdb.js",
   "engines": {
     "node": ">=3.3"
   },
