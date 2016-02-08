@@ -8,7 +8,7 @@ var lmdb = require('node-lmdb'),
 
 if (_debug) Promise.longStackTraces();
 
-export default class Stream {
+export default class StreamController {
     constructor(sys) {
         this._sys = sys;
     }

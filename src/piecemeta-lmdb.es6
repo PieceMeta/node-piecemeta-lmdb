@@ -1,7 +1,7 @@
-import Meta from './controller/meta';
-import Search from './controller/search';
-import Stream from './controller/stream';
-import Sys from './controller/sys';
+import MetaController from './controller/meta';
+import SearchController from './controller/search';
+import StreamController from './controller/stream';
+import SysController from './controller/sys';
 
 import AccessTokenModel from './model/access-token';
 import ApiKeyModel from './model/api-key';
@@ -12,16 +12,16 @@ import UserModel from './model/user';
 
 var _debug = typeof v8debug === 'object';
 
-export default class PmaLmdb {
+export default class PiecemetaLmdb {
     constructor() {
-        this._sys = new Sys();
+        this._sys = new SysController();
     }
 
     open(lmdbDataPath, indexDataPath, mapSize, dbCount) {
         return this._sys.openEnv(lmdbDataPath, mapSize, dbCount)
             .then(() => {
-                this._stream = new Stream(this._sys);
-                this._meta = new Meta(this._sys, indexDataPath);
+                this._stream = new StreamController(this._sys);
+                this._meta = new MetaController(this._sys, indexDataPath);
                 for (let model of [
                     AccessTokenModel,
                     ApiKeyModel,

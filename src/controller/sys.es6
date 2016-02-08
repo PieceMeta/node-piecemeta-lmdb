@@ -7,7 +7,7 @@ var lmdb = require('node-lmdb'),
 
 if (_debug) Promise.longStackTraces();
 
-export default class Sys {
+export default class SysController {
     constructor() {
         this._env = new lmdb.Env();
     }
@@ -40,7 +40,7 @@ export default class Sys {
                 }
                 return this._env;
             })
-            .catch(Sys.errorHandler);
+            .catch(SysController.errorHandler);
     }
 
     closeEnv() {
@@ -48,7 +48,7 @@ export default class Sys {
             .then(() => {
                 this._env.close();
             })
-            .catch(Sys.errorHandler);
+            .catch(SysController.errorHandler);
     }
 
     openDb(dbName) {
@@ -60,7 +60,7 @@ export default class Sys {
                 });
                 return dbi;
             })
-            .catch(Sys.errorHandler);
+            .catch(SysController.errorHandler);
     }
 
     closeDb(dbi) {
@@ -68,7 +68,7 @@ export default class Sys {
             .then(() => {
                 dbi.close();
             })
-            .catch(Sys.errorHandler);
+            .catch(SysController.errorHandler);
     }
 
     dropDb(dbi, justFreePages) {
@@ -76,7 +76,7 @@ export default class Sys {
             .then(() => {
                 dbi.drop({justFreePages: justFreePages});
             })
-            .catch(Sys.errorHandler);
+            .catch(SysController.errorHandler);
     }
 
     statDb(dbi) {
@@ -88,7 +88,7 @@ export default class Sys {
                 txn.commit();
                 return stat;
             })
-            .catch(Sys.errorHandler);
+            .catch(SysController.errorHandler);
     }
 
     errorHandler(err) {

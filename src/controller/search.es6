@@ -5,7 +5,7 @@ var Promise = require('bluebird'),
     mkdirp = Promise.promisify(fs.mkdirp),
     _debug = typeof v8debug === 'object';
 
-export default class Search {
+export default class SearchController {
     constructor(basepath) {
         this._indexes = [];
         this._basepath = null;

@@ -1,5 +1,5 @@
-import Sys from './sys';
-import Search from './search';
+import SysController from './sys';
+import SearchController from './search';
 
 var lmdb = require('node-lmdb'),
     Promise = require('bluebird'),
@@ -10,11 +10,11 @@ var lmdb = require('node-lmdb'),
 
 if (_debug) Promise.longStackTraces();
 
-export default class Meta {
+export default class MetaController {
     constructor(sys, searchBasepath) {
         this._models = {};
         this._sys = sys;
-        this._search = new Search(searchBasepath);
+        this._search = new SearchController(searchBasepath);
     }
 
     registerModel(key, model) {
@@ -45,7 +45,7 @@ export default class Meta {
             _self._sys.closeDb(dbi);
             return data;
         })()
-        .catch(Sys.errorHandler);
+        .catch(SysController.errorHandler);
     }
 
     fetch(resource, uuid) {
@@ -68,7 +68,7 @@ export default class Meta {
                     return data;
                 });
         })()
-        .catch(Sys.errorHandler);
+        .catch(SysController.errorHandler);
     }
 
     create(resource, payload, override) {
@@ -97,7 +97,7 @@ export default class Meta {
                     return data;
                 });
         })()
-        .catch(Sys.errorHandler);
+        .catch(SysController.errorHandler);
     }
 
     update(resource, uuid, payload) {
@@ -141,7 +141,7 @@ export default class Meta {
                         });
                 });
         })()
-        .catch(Sys.errorHandler);
+        .catch(SysController.errorHandler);
     }
 
     del(resource, uuid) {
@@ -157,7 +157,7 @@ export default class Meta {
             txn.commit();
             _self._sys.closeDb(dbi);
         })()
-        .catch(Sys.errorHandler);
+        .catch(SysController.errorHandler);
     }
 
     getBinaryAsync(cursor, resource) {

@@ -9,14 +9,14 @@ let Promise = require('bluebird'),
 
 Promise.promisifyAll(fs);
 
-import PmaLmdb from '../src/pma-lmdb';
+import PiecemetaLmdb from '../src/piecemeta-lmdb';
 
-describe('PmaLmdb', function() {
+describe('PiecemetaLmdb', function() {
     this.timeout(10000);
     let client, fixtures = {};
 
     beforeEach(() => {
-        client = new PmaLmdb();
+        client = new PiecemetaLmdb();
         return client.open('./test/data/lmdb', './test/data/index', 256 * 1024 * 1024, 256)
             .then(() => {
                 return fs.readdirAsync('./test/fixtures');
