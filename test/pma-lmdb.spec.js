@@ -156,29 +156,61 @@ describe('PmaLmdb', function() {
                 });
         });
 
-        it('stores 100000 frames of 3-dimensional float data', () => {
+        describe('Stream Data', () => {
+
             let valCount = 3,
                 valueLength = 4,
-                frameCount = 1000,
+                frameCount = 100000,
                 frameSize = valCount * valueLength,
-                buffer = new Buffer(100000 * frameSize),
-                writeConfig = {
+                buffer = new Buffer(frameCount * frameSize),
+                writeConfig, readConfig = writeConfig = {
                     from: 0,
                     valueLength: valueLength,
                     valueCount: valCount,
                     format: 'float'
-                },
-                writeFunc = (val, offset) => {
-                    buffer.writeFloatLE(val, offset);
                 };
+
+            readConfig.from = 50000;
+            readConfig.to = 100000;
 
             for (let i = 0; i < frameCount; i += 1) {
                 for (let v = 0; v < valCount; v += 1) {
-                    writeFunc(Math.random(), frameSize * i + v * valueLength);
+                    buffer.writeFloatLE(Math.random(), frameSize * i + v * valueLength);
                 }
             }
 
-            return client.stream.putStreamData(_item.toObject(), buffer, writeConfig);
+            it('stores 100000 frames of 3-dimensional float data', () => {
+                return client.stream.putStreamData(_item.toObject(), buffer, writeConfig);
+            });
+
+            it('stores 100000 frames of 3-dimensional float data, then reads back last 50000', () => {
+                return client.stream.putStreamData(_item.toObject(), buffer, writeConfig)
+                    .then(() => {
+                        return client.stream.getStreamData(_item.toObject(), readConfig);
+                    })
+                    .then((data) => {
+                        data.length.should.equal(frameCount * frameSize / 2);
+                    });
+            });
+
+            it('stores 100000 frames of 3-dimensional float data, then reads back every 1000th frame', () => {
+                readConfig.from = 0;
+                readConfig.skip = 1000;
+                return client.stream.putStreamData(_item.toObject(), buffer, writeConfig)
+                    .then(() => {
+                        return client.stream.getStreamData(_item.toObject(), readConfig);
+                    })
+                    .then((data) => {
+                        data.length.should.equal(frameCount * frameSize / 1000);
+                    });
+            });
+
+            it('stores 100000 frames of 3-dimensional float data, then deletes it', () => {
+                return client.stream.putStreamData(_item.toObject(), buffer, writeConfig)
+                    .then(() => {
+                        return client.stream.delStreamData(_item.toObject());
+                    });
+            });
         });
     })
 });
