@@ -7,7 +7,5 @@
   },
   "ecmaFeatures": {
     "modules": true
-  },
-  "rules": {
   }
 }
