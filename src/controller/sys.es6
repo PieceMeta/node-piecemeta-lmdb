@@ -40,7 +40,7 @@ export default class SysController {
                 }
                 return this._env;
             })
-            .catch(SysController.errorHandler);
+            .catch(this.errorHandler);
     }
 
     closeEnv() {
@@ -48,7 +48,7 @@ export default class SysController {
             .then(() => {
                 this._env.close();
             })
-            .catch(SysController.errorHandler);
+            .catch(this.errorHandler);
     }
 
     openDb(dbName) {
@@ -60,7 +60,7 @@ export default class SysController {
                 });
                 return dbi;
             })
-            .catch(SysController.errorHandler);
+            .catch(this.errorHandler);
     }
 
     closeDb(dbi) {
@@ -68,7 +68,7 @@ export default class SysController {
             .then(() => {
                 dbi.close();
             })
-            .catch(SysController.errorHandler);
+            .catch(this.errorHandler);
     }
 
     dropDb(dbi, justFreePages) {
@@ -76,7 +76,7 @@ export default class SysController {
             .then(() => {
                 dbi.drop({justFreePages: justFreePages});
             })
-            .catch(SysController.errorHandler);
+            .catch(this.errorHandler);
     }
 
     statDb(dbi) {
@@ -88,7 +88,7 @@ export default class SysController {
                 txn.commit();
                 return stat;
             })
-            .catch(SysController.errorHandler);
+            .catch(this.errorHandler);
     }
 
     errorHandler(err) {

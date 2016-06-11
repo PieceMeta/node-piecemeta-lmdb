@@ -1,5 +1,9 @@
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
@@ -11,10 +15,6 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
 
 var _meta = require('./controller/meta');
 

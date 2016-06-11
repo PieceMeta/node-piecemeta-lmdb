@@ -1,7 +1,7 @@
 import Search from '../controller/search';
 import Sys from '../controller/sys';
 
-var Model = require('node-schema-object'),
+var Model = require('schema-object'),
     Promise = require('bluebird'),
     msgpack = require('msgpack');
 

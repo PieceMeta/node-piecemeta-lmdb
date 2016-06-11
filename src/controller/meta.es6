@@ -45,7 +45,7 @@ export default class MetaController {
             _self._sys.closeDb(dbi);
             return data;
         })()
-        .catch(SysController.errorHandler);
+        .catch(this._sys.errorHandler);
     }
 
     fetch(resource, uuid) {
@@ -68,7 +68,7 @@ export default class MetaController {
                     return data;
                 });
         })()
-        .catch(SysController.errorHandler);
+        .catch(this._sys.errorHandler);
     }
 
     create(resource, payload, override) {
@@ -97,7 +97,7 @@ export default class MetaController {
                     return data;
                 });
         })()
-        .catch(SysController.errorHandler);
+        .catch(this._sys.errorHandler);
     }
 
     update(resource, uuid, payload) {
@@ -141,7 +141,7 @@ export default class MetaController {
                         });
                 });
         })()
-        .catch(SysController.errorHandler);
+        .catch(this._sys.errorHandler);
     }
 
     del(resource, uuid) {
@@ -157,7 +157,7 @@ export default class MetaController {
             txn.commit();
             _self._sys.closeDb(dbi);
         })()
-        .catch(SysController.errorHandler);
+        .catch(this._sys.errorHandler);
     }
 
     getBinaryAsync(cursor, resource) {

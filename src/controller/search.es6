@@ -15,7 +15,9 @@ export default class SearchController {
     setBasepath(basepath) {
         this._basepath = require('path').resolve(basepath);
         if (_debug) console.log(`Index: ${this._basepath}`);
-        return mkdirp(this._basepath);
+        return Promise.promisify(function (basepath, cb) {
+            fs.mkdirp(this._basepath, cb);
+        });
     }
 
     index(resource) {
