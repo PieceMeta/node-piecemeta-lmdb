@@ -85,7 +85,7 @@ var StreamController = function () {
                                     });
                                 });
                                 counter = config.from;
-                                valueLength = _self.getLengthFromFormat(config.format);
+                                valueLength = _self.getLengthFromFormat(meta.format);
                                 result = new Buffer((config.to - config.from) * meta.labels.length * valueLength / config.skip);
                                 loopstart = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, config.from);
                                 loopend = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, config.to);
