@@ -170,26 +170,39 @@ describe('PiecemetaLmdb', function() {
                     format: 'float'
                 };
 
-            readConfig.from = 50000;
-            readConfig.to = 100000;
-
             for (let i = 0; i < frameCount; i += 1) {
                 for (let v = 0; v < valCount; v += 1) {
                     buffer.writeFloatLE(Math.random(), frameSize * i + v * valueLength);
                 }
             }
 
-            it('stores 100000 frames of 3-dimensional float data', () => {
-                return client.stream.putStreamData(_item.toObject(), buffer, writeConfig);
+            it('stores 100000 frames of 3-dimensional float data, then reads them back', () => {
+                readConfig.from = 0;
+                readConfig.to = 100000;
+                return client.stream.putStreamData(_item.toObject(), buffer, writeConfig)
+                    .then(() => {
+                        return client.stream.getStreamData(_item.toObject(), readConfig);
+                    })
+                    .then((data) => {
+                        data.length.should.equal(frameCount * frameSize);
+                        for (let i = 0; i < data.length; i += 1) {
+                            data[i].should.equal(buffer[i]);
+                        }
+                    });
             });
 
             it('stores 100000 frames of 3-dimensional float data, then reads back last 50000', () => {
+                readConfig.from = 50000;
+                readConfig.to = 100000;
                 return client.stream.putStreamData(_item.toObject(), buffer, writeConfig)
                     .then(() => {
                         return client.stream.getStreamData(_item.toObject(), readConfig);
                     })
                     .then((data) => {
                         data.length.should.equal(frameCount * frameSize / 2);
+                        for (let i = 0; i < data.length; i += 1) {
+                            data[i].should.equal(buffer[i + readConfig.from * frameSize]);
+                        }
                     });
             });
 

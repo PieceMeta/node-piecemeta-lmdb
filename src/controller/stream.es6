@@ -32,8 +32,9 @@ export default class StreamController {
                         callback(null, val);
                     });
                 }),
-                counter = config.from,
+                counter = 0,
                 valueLength = _self.getLengthFromFormat(meta.format),
+                position = 0,
                 result = new Buffer((config.to - config.from) * meta.labels.length * valueLength / config.skip),
                 loopstart = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, config.from),
                 loopend = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, config.to);
@@ -45,8 +46,9 @@ export default class StreamController {
             function loop(key) {
                 if (key && key !== loopend) {
                     return getBinaryAsync().then((buffer) => {
-                        buffer.copy(result, counter, 0);
+                        buffer.copy(result, position);
                         counter += 1;
+                        position += buffer.length;
                         return cursor.goToKey(
                             _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, config.from + counter * config.skip)
                         );
@@ -77,11 +79,15 @@ export default class StreamController {
             frameCount = frameBuffer.length / frameSize,
             _self = this;
 
+        if (!config.from) {
+            config.from = 0;
+        }
+
         return Promise.coroutine(function* () {
             let dbi = yield _self._sys.openDb(meta.package_uuid),
                 txn = _self._sys.env.beginTxn();
 
-            for (let i = 0; i < frameCount; i += 1) {
+            for (let i = config.from; i < config.from + frameCount; i += 1) {
                 let key = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, i);
                 txn.putBinary(dbi, key, frameBuffer.slice(i * frameSize, (i + 1) * frameSize));
             }

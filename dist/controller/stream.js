@@ -56,7 +56,7 @@ var StreamController = function () {
             config.skip = config.skip || 1;
 
             return Promise.coroutine(_regenerator2.default.mark(function _callee() {
-                var dbi, txn, cursor, getBinaryAsync, counter, valueLength, result, loopstart, loopend, loop;
+                var dbi, txn, cursor, getBinaryAsync, counter, valueLength, position, result, loopstart, loopend, loop;
                 return _regenerator2.default.wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
@@ -64,8 +64,9 @@ var StreamController = function () {
                                 loop = function loop(key) {
                                     if (key && key !== loopend) {
                                         return getBinaryAsync().then(function (buffer) {
-                                            buffer.copy(result, counter, 0);
+                                            buffer.copy(result, position);
                                             counter += 1;
+                                            position += buffer.length;
                                             return cursor.goToKey(_self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, config.from + counter * config.skip));
                                         }).then(loop);
                                     }
@@ -84,20 +85,21 @@ var StreamController = function () {
                                         callback(null, val);
                                     });
                                 });
-                                counter = config.from;
+                                counter = 0;
                                 valueLength = _self.getLengthFromFormat(meta.format);
+                                position = 0;
                                 result = new Buffer((config.to - config.from) * meta.labels.length * valueLength / config.skip);
                                 loopstart = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, config.from);
                                 loopend = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, config.to);
 
                                 if (cursor.goToKey(loopstart)) {
-                                    _context.next = 14;
+                                    _context.next = 15;
                                     break;
                                 }
 
                                 throw new Error('Start frame not found for key ' + loopstart);
 
-                            case 14:
+                            case 15:
                                 return _context.abrupt('return', loop(cursor.goToKey(loopstart)).then(function () {
                                     cursor.close();
                                     txn.commit();
@@ -105,7 +107,7 @@ var StreamController = function () {
                                     return result;
                                 }));
 
-                            case 15:
+                            case 16:
                             case 'end':
                                 return _context.stop();
                         }
@@ -126,6 +128,10 @@ var StreamController = function () {
                 frameCount = frameBuffer.length / frameSize,
                 _self = this;
 
+            if (!config.from) {
+                config.from = 0;
+            }
+
             return Promise.coroutine(_regenerator2.default.mark(function _callee2() {
                 var dbi, txn, i, key;
                 return _regenerator2.default.wrap(function _callee2$(_context2) {
@@ -140,7 +146,7 @@ var StreamController = function () {
                                 txn = _self._sys.env.beginTxn();
 
 
-                                for (i = 0; i < frameCount; i += 1) {
+                                for (i = config.from; i < config.from + frameCount; i += 1) {
                                     key = _self.getKey(meta.uuid, _self._sys.PM_LMDB_SEP_FRAMES, i);
 
                                     txn.putBinary(dbi, key, frameBuffer.slice(i * frameSize, (i + 1) * frameSize));
