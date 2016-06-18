@@ -42,6 +42,7 @@ var StreamModel = function (_BaseModel) {
             group: { type: 'string' },
             frameCount: { type: 'number' },
             labels: { type: 'array', required: true },
+            timeAtIndex: { type: 'number' },
             format: { type: 'string' },
             fps: { type: 'number', required: true },
 
