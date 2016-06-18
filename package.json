@@ -31,7 +31,7 @@
     "fs-extra": "0.30.0",
     "msgpack": "1.0.2",
     "nedb": "1.7.4",
-    "node-lmdb": "git+https://github.com/Venemo/node-lmdb.git#0.2.0",
+    "node-lmdb": "git+https://github.com/Venemo/node-lmdb.git",
     "schema-object": "4.0.0",
     "secure-random": "1.1.1",
     "sha1": "1.1.1",
