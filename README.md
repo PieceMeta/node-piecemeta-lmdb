@@ -1,5 +1,6 @@
 # PieceMeta LMDB
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/63d87859fca04ce78083b4612e6b5a0b)](https://www.codacy.com/app/dasantonym/node-piecemeta-lmdb?utm_source=github.com&utm_medium=referral&utm_content=PieceMeta/node-piecemeta-lmdb&utm_campaign=badger)
 [![Build Status](https://travis-ci.org/PieceMeta/node-piecemeta-lmdb.svg?branch=master)](https://travis-ci.org/PieceMeta/node-piecemeta-lmdb) [![bitHound Overall Score](https://www.bithound.io/github/PieceMeta/node-piecemeta-lmdb/badges/score.svg)](https://www.bithound.io/github/PieceMeta/node-piecemeta-lmdb) [![bitHound Dependencies](https://www.bithound.io/github/PieceMeta/node-piecemeta-lmdb/badges/dependencies.svg)](https://www.bithound.io/github/PieceMeta/node-piecemeta-lmdb/master/dependencies/npm) [![bitHound Dev Dependencies](https://www.bithound.io/github/PieceMeta/node-piecemeta-lmdb/badges/devDependencies.svg)](https://www.bithound.io/github/PieceMeta/node-piecemeta-lmdb/master/dependencies/npm)
 
 Storage abstraction for the PieceMeta API server using LMDB.
